@@ -89,6 +89,10 @@ class Client
 
     public function setCategory(string $category): self
     {
+        if (!in_array($category, ['X', 'Y', 'Z'])) {
+            throw new \InvalidArgumentException("Category must be one of 'X', 'Y' or 'Z'.");
+        }
+
         $this->category = $category;
         return $this;
     }
