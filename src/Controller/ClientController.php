@@ -41,34 +41,6 @@ class ClientController extends AbstractController
         return $this->json($data);
     }
 
-    #[Route('/{id}', methods: ['GET'])]
-    public function getById(int $id): JsonResponse
-    {
-        $client = $this->entityManager->getRepository(Client::class)->find($id);
-
-        if (!$client) {
-            return new JsonResponse([
-                'message' => 'Client not found',
-                'details' => [
-                    'error_code' => 'CLIENT_NOT_FOUND',
-                    'description' => 'The requested client was not found in the system.'
-                ]
-            ], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        $serializedClient = [
-            'id' => $client->getId(),
-            'name' => $client->getName(),
-            'lastName' => $client->getLastName(),
-            'city' => $client->getCity(),
-            'category' => $client->getCategory(),
-            'age' => $client->getAge(),
-            'active' => $client->getActive()
-        ];
-
-        return $this->json($serializedClient);
-    }
-
     #[Route('/', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
@@ -161,5 +133,60 @@ class ClientController extends AbstractController
                 'description' => 'The client has been successfully deleted from the system.'
             ]
         ], JsonResponse::HTTP_OK);
+    }
+    
+    #[Route('/search', methods: ['GET'])]
+    public function advancedSearch(Request $request): JsonResponse
+    {
+
+        $params = $request->query->all();
+        $queryBuilder = $this->entityManager->getRepository(Client::class)->createQueryBuilder('c');
+
+        foreach ($params as $field => $value) {
+            switch ($field) {
+                case 'id':
+                    $queryBuilder->andWhere("c.$field = :$field")->setParameter($field, $value);
+                    break;
+                case 'name':
+                    $queryBuilder->andWhere("c.$field LIKE :$field")->setParameter($field, "%$value%");
+                    break;
+                case 'lastName':
+                    $queryBuilder->andWhere("c.$field LIKE :$field")->setParameter($field, "%$value%");
+                    break;
+                case 'city':
+                    $queryBuilder->andWhere("c.$field LIKE :$field")->setParameter($field, "%$value%");
+                    break;
+                case 'category':
+                    $queryBuilder->andWhere("c.$field = :$field")->setParameter($field, $value);
+                    break;
+                case 'age':
+                    if (isset($value['greaterThan'])) {
+                        $queryBuilder->andWhere("c.$field > :$field")->setParameter($field, $value['greaterThan']);
+                    }
+                    if (isset($value['lessThan'])) {
+                        $queryBuilder->andWhere("c.$field < :$field")->setParameter($field, $value['lessThan']);
+                    }
+                    break;
+                case 'active':
+                    $queryBuilder->andWhere("c.$field = :$field")->setParameter($field, $value);
+                    break;
+            }
+        }
+
+        $clients = $queryBuilder->getQuery()->getResult();
+
+        $data = [];
+        foreach ($clients as $client) {
+            $data[] = [
+                'name' => $client->getName(),
+                'lastName' => $client->getLastName(),
+                'city' => $client->getCity(),
+                'category' => $client->getCategory(),
+                'age' => $client->getAge(),
+                'active' => $client->getActive()
+            ];
+        }
+
+        return $this->json($data);
     }
 }
