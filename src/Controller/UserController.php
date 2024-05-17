@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/user', name: 'app_user')]
+#[Route('/api/user')]
 class UserController extends AbstractController
 {
     private $entityManager;
@@ -19,8 +19,8 @@ class UserController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
-    #[Route('/', name: 'app_user_getAll', methods: ['GET'])]
-    public function getAllUsers(): JsonResponse
+    #[Route('/', methods: ['GET'])]
+    public function getAll(): JsonResponse
     {
         $users = $this->entityManager->getRepository(User::class)->findAll();
 
@@ -37,8 +37,8 @@ class UserController extends AbstractController
         return $this->json($data);
     }
 
-    #[Route('/{id}', name: 'app_user_getById', methods: ['GET'])]
-    public function getUserById(int $id): JsonResponse
+    #[Route('/{id}', methods: ['GET'])]
+    public function getById(int $id): JsonResponse
     {
         $user = $this->entityManager->getRepository(User::class)->find($id);
 
@@ -61,8 +61,8 @@ class UserController extends AbstractController
         return $this->json($serializedUser);
     }
 
-    #[Route('/{id}', name: 'app_user_delete', methods: ['DELETE'])]
-    public function deleteUser(int $id): JsonResponse
+    #[Route('/{id}', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
     {
         $userRepository = $this->entityManager->getRepository(User::class);
         $user = $userRepository->find($id);
@@ -88,8 +88,8 @@ class UserController extends AbstractController
         ], JsonResponse::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'app_user_update', methods: ['PUT'])]
-    public function updateUser(int $id, Request $request): JsonResponse
+    #[Route('/{id}', methods: ['PUT'])]
+    public function update(int $id, Request $request): JsonResponse
     {
         $userRepository = $this->entityManager->getRepository(User::class);
         $user = $userRepository->find($id);
